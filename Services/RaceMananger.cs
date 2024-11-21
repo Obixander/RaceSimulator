@@ -52,8 +52,8 @@ namespace Services
                 {
                     if (racer.Laps[race.CurrentLap - 1] == default)
                     {
-                        racer.LastLap = Laptime.Elapsed;
-                        racer.Laps[race.CurrentLap - 1] = Laptime.Elapsed;
+                        racer.LastLap = (long)Laptime.Elapsed.TotalMilliseconds;
+                        racer.Laps[race.CurrentLap - 1] = (long)Laptime.Elapsed.TotalMilliseconds;
                         racer.Placement = placement;
 
 

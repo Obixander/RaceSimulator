@@ -23,20 +23,31 @@ Welcome to your new app.
         try
         {
             await Hub.StartConnectionAsync();
-            Hub.HubConnection.On<Race>(nameof(IRaceHub.RaceUpdate), async (race) =>
+            if (Hub.HubConnection.State == HubConnectionState.Connected)
             {
+                Console.WriteLine("Connection made succesfully");
+
+
+            Hub.HubConnection.On<Race>("RaceUpdate", async (race) =>
+            {
+                Console.WriteLine("RaceUpdate received.");
                 testdata = race;
                 await InvokeAsync(StateHasChanged);
             });
 
-            Hub.HubConnection.On<List<Car>>(nameof(IRaceHub.CarCrossedLine), async (racers) =>
+            Hub.HubConnection.On<List<Car>>("CarCrossedLine", async (racers) =>
             {
+                Console.WriteLine("CarCrossedLine received.");
                 testdata.Racers = racers;
                 await InvokeAsync(StateHasChanged);
             });
+                Hub.HubConnection.On<string>("TestEvent", async (message) =>
+                {
+                    Console.WriteLine($"Received message: {message}");
+                    await InvokeAsync(StateHasChanged);
+                });
 
-            if (Hub.HubConnection.State == HubConnectionState.Connected)
-            {
+            
                 await Hub.HubConnection.InvokeAsync<Task>(nameof(IRaceHub.StartRace), "Formula One", 5);
             };
         }

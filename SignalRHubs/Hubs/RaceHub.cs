@@ -24,8 +24,14 @@ namespace SignalRHubs.Hubs
         {
             if (Clients.All != null && Clients != null)
             {
-                Console.WriteLine($"Sending race update: {e.race.Name}");
-                await Clients.All.SendAsync(nameof(RaceUpdate), e.race);
+                Console.WriteLine($"Race update triggered. Sending race: {e.race.Name}, Current lap: {e.race.CurrentLap}");
+
+                // Convert TimeSpan to long if it's not done yet
+                foreach (var car in e.race.Racers)
+                {
+                    Console.WriteLine($"Car: {car.Name}, BestLapMilliseconds: {car.BestLap}");
+                }
+                await Clients.All.SendAsync("RaceUpdate", e.race);
 
             }
         }
@@ -33,8 +39,13 @@ namespace SignalRHubs.Hubs
         {
             if (Clients.All != null && Clients != null)
             {
-                Console.WriteLine($"Sending car crossed line update.");
-                await Clients.All.SendAsync(nameof(CarCrossedLine), e.racers);
+                Console.WriteLine("Car crossed line event triggered.");
+
+                foreach (var car in e.racers)
+                {
+                    Console.WriteLine($"Car: {car.Name}, BestLapMilliseconds: {car.BestLap}");
+                }
+                await Clients.All.SendAsync("CarCrossedLine", e.racers);
             }
         }
 
