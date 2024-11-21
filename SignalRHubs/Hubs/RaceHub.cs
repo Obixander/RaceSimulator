@@ -45,7 +45,7 @@ namespace SignalRHubs.Hubs
                 {
                     Console.WriteLine($"Car: {car.Name}, BestLapMilliseconds: {car.BestLap}");
                 }
-                await Clients.All.SendAsync("CarCrossedLine", e.racers);
+                await Clients.All.SendAsync("CarCrossedLine", e.racers); //cant send this datatype fix
             }
         }
 
