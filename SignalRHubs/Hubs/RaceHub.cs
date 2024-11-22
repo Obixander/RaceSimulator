@@ -14,10 +14,15 @@ namespace SignalRHubs.Hubs
 
             this.race.RaceUpdate += RaceUpdate;
             this.race.CarCrossedLine += CarCrossedLine;
+            
         }
         public async Task StartRace(string name, int amountOfLaps)
         {
-           await race.StartRace(name, amountOfLaps);
+            if (Clients.All != null && Clients != null)
+            {
+               await race.StartRace(name, amountOfLaps);
+            }
+
         }
 
         public async void RaceUpdate(object? sender, RaceUpdate e)

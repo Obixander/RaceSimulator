@@ -15,7 +15,6 @@ Welcome to your new app.
     <p>@testdata.CurrentLap</p>
 }
 
-
 @code{
     private Race testdata;
     protected override async Task OnInitializedAsync()
@@ -28,27 +27,36 @@ Welcome to your new app.
                 Console.WriteLine("Connection made succesfully");
 
 
-                Hub.HubConnection.On<object>("RaceUpdate", async (race) =>
+                Hub.HubConnection.On<Race>("RaceUpdate", async (race) =>
                 {
                     Console.WriteLine("RaceUpdate received.");
-                    testdata = (Race)race;
+                    var test = race;
+                    Console.WriteLine(test.Name);
+                    Console.WriteLine(test.CurrentLap);
+                    testdata = test;
                     await InvokeAsync(StateHasChanged);
+
                 });
 
                 Hub.HubConnection.On<object[]>("CarCrossedLine", async (racers) =>
                 {
                     Console.WriteLine($"CarCrossedLine received. {racers[0]}");
-                    
+                    int count = 0;
+                    Console.WriteLine("State about to change");
+                    foreach (var item in racers)
+                    {
+                        testdata.Racers[count] = (Car)item;
+                    }
                     await InvokeAsync(StateHasChanged);
+                    Console.WriteLine("State should have changed");
                 });
-            
-                await Hub.HubConnection.InvokeAsync<Task>(nameof(IRaceHub.StartRace), "Formula One", 5);
+
+                Hub.HubConnection.InvokeAsync<Task>(nameof(IRaceHub.StartRace), "Formula One", 5);
             };
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
         }
-
     }
 }
