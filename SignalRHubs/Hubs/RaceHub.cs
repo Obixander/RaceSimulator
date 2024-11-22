@@ -31,7 +31,7 @@ namespace SignalRHubs.Hubs
                 {
                     Console.WriteLine($"Car: {car.Name}, BestLapMilliseconds: {car.BestLap}");
                 }
-                await Clients.All.SendAsync("RaceUpdate", e.race);
+                await Clients.All.SendAsync("RaceUpdate", new {e.race});
 
             }
         }
@@ -45,7 +45,7 @@ namespace SignalRHubs.Hubs
                 {
                     Console.WriteLine($"Car: {car.Name}, BestLapMilliseconds: {car.BestLap}");
                 }
-                await Clients.All.SendAsync("CarCrossedLine", e.racers); //cant send this datatype fix
+                await Clients.All.SendAsync("CarCrossedLine", new object[] { e.racers }); //cant send this datatype fix
             }
         }
 
