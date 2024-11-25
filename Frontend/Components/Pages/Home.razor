@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using Entities
 @using Microsoft.AspNetCore.SignalR.Client
+@using Newtonsoft.Json
 @using Services
 @inject SignalRService Hub
 <PageTitle>Home</PageTitle>
@@ -13,10 +14,26 @@ Welcome to your new app.
 {
     <p>@testdata.Name</p>
     <p>@testdata.CurrentLap</p>
+    @if (testdata.Racers != null)
+    {
+        @foreach (var item in testdata.Racers)
+        {
+            <p>@item.Name</p>
+            <p>@item.Placement</p>
+            <p>@item.LastLap</p>
+            <p>@item.BestLap</p>
+        }
+    }
+
 }
 
-@code{
-    private Race testdata;
+
+
+@code {
+
+    public Race testdata = new();
+    private string testing;
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -25,33 +42,35 @@ Welcome to your new app.
             if (Hub.HubConnection.State == HubConnectionState.Connected)
             {
                 Console.WriteLine("Connection made succesfully");
-
-
-                Hub.HubConnection.On<Race>("RaceUpdate", async (race) =>
+                //subscribes to an event that is triggered when a major event happens and updates the UI
+                Hub.HubConnection.On<string>("RaceUpdate", async (race) =>
                 {
-                    Console.WriteLine("RaceUpdate received.");
-                    var test = race;
-                    Console.WriteLine(test.Name);
-                    Console.WriteLine(test.CurrentLap);
-                    testdata = test;
-                    await InvokeAsync(StateHasChanged);
-
-                });
-
-                Hub.HubConnection.On<object[]>("CarCrossedLine", async (racers) =>
-                {
-                    Console.WriteLine($"CarCrossedLine received. {racers[0]}");
-                    int count = 0;
-                    Console.WriteLine("State about to change");
-                    foreach (var item in racers)
+                    Console.WriteLine("Data received on RaceUpdate");
+                    if (race != null)
                     {
-                        testdata.Racers[count] = (Car)item;
+                        Race test = JsonConvert.DeserializeObject<Race>(race.ToString()) ?? throw new ArgumentNullException();
+                        testdata = new Race(test);
                     }
+                    await Task.Yield();
                     await InvokeAsync(StateHasChanged);
-                    Console.WriteLine("State should have changed");
+                });
+                //subscribes to an event that is triggered when a car crosses the finish line and updates the UI
+                Hub.HubConnection.On<string>("CarCrossedLine", async (racers) =>
+                {
+                    Console.WriteLine("Data received on CarCrossedLine");
+                    if (racers != null && testdata != null)
+                    {
+                        //change to match above later
+                        testdata.Racers = JsonConvert.DeserializeObject<List<Car>>(racers.ToString()) ?? throw new ArgumentNullException();
+                    }
+                    await Task.Yield();
+                    await InvokeAsync(StateHasChanged);
                 });
 
-                Hub.HubConnection.InvokeAsync<Task>(nameof(IRaceHub.StartRace), "Formula One", 5);
+                _ = Hub.HubConnection.InvokeAsync<Task>(nameof(IRaceHub.StartRace), "Formula One", 5); //this is done without the await intentionally
+                //test method remove later
+                testing = "Connection made succesfully";
+                await UpdateUi(testing);
             };
         }
         catch (Exception ex)
@@ -59,4 +78,15 @@ Welcome to your new app.
             Console.WriteLine(ex.Message);
         }
     }
+    public async Task UpdateUi(string caller)
+    {
+        testing = caller;
+        Console.WriteLine(testing);
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+
+    }
+
 }

@@ -15,6 +15,14 @@ namespace Entities
             Racers = racers;
             AmountOfLaps = amountOfLaps;
         }
+        public Race(Race race)
+        {
+            Name = race.name;
+            Racers = race.Racers;
+            AmountOfLaps = race.AmountOfLaps;
+            CurrentLap = race.currentLap;
+            Finished = race.Finished;
+        }
         public Race()
         {
 

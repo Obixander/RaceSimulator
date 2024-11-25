@@ -1,7 +1,9 @@
 ﻿using Entities;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 using Services;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 namespace SignalRHubs.Hubs
 {
@@ -30,13 +32,8 @@ namespace SignalRHubs.Hubs
             if (Clients.All != null && Clients != null)
             {
                 Console.WriteLine($"Race update triggered. Sending race: {e.race.Name}, Current lap: {e.race.CurrentLap}");
-
-                // Convert TimeSpan to long if it's not done yet
-                foreach (var car in e.race.Racers)
-                {
-                    Console.WriteLine($"Car: {car.Name}, BestLapMilliseconds: {car.BestLap}");
-                }
-                await Clients.All.SendAsync("RaceUpdate", new {e.race});
+                string json = JsonConvert.SerializeObject(e.race);
+                await Clients.All.SendAsync("RaceUpdate", json);
 
             }
         }
@@ -45,12 +42,8 @@ namespace SignalRHubs.Hubs
             if (Clients.All != null && Clients != null)
             {
                 Console.WriteLine("Car crossed line event triggered.");
-
-                foreach (var car in e.racers)
-                {
-                    Console.WriteLine($"Car: {car.Name}, BestLapMilliseconds: {car.BestLap}");
-                }
-                await Clients.All.SendAsync("CarCrossedLine", new object[] { e.racers }); //cant send this datatype fix
+                string json = JsonConvert.SerializeObject(e.racers);
+                await Clients.All.SendAsync("CarCrossedLine", json); //cant send this datatype fix
             }
         }
 
