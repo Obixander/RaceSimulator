@@ -33,11 +33,13 @@ Welcome to your new app.
 
     public Race testdata = new();
     private string testing;
+    private Guid Uid = Guid.NewGuid();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            Console.WriteLine($"Component - {Uid} - Rendered");
             await Hub.StartConnectionAsync();
             if (Hub.HubConnection.State == HubConnectionState.Connected)
             {
@@ -51,8 +53,9 @@ Welcome to your new app.
                         Race test = JsonConvert.DeserializeObject<Race>(race.ToString()) ?? throw new ArgumentNullException();
                         testdata = new Race(test);
                     }
-                    await Task.Yield();
                     await InvokeAsync(StateHasChanged);
+                    await Task.Yield();
+                    Console.WriteLine($"Component - {Uid} - Render Queued");
                 });
                 //subscribes to an event that is triggered when a car crosses the finish line and updates the UI
                 Hub.HubConnection.On<string>("CarCrossedLine", async (racers) =>
@@ -62,13 +65,15 @@ Welcome to your new app.
                     {
                         //change to match above later
                         testdata.Racers = JsonConvert.DeserializeObject<List<Car>>(racers.ToString()) ?? throw new ArgumentNullException();
+                        Console.WriteLine(testdata.Racers[0].ToString());
                     }
-                    await Task.Yield();
                     await InvokeAsync(StateHasChanged);
+                    await Task.Yield();
+                    Console.WriteLine($"Component - {Uid} - Render Queued");
                 });
 
                 _ = Hub.HubConnection.InvokeAsync<Task>(nameof(IRaceHub.StartRace), "Formula One", 5); //this is done without the await intentionally
-                //test method remove later
+                                                                                                       //test method remove later
                 testing = "Connection made succesfully";
                 await UpdateUi(testing);
             };
@@ -78,6 +83,7 @@ Welcome to your new app.
             Console.WriteLine(ex.Message);
         }
     }
+
     public async Task UpdateUi(string caller)
     {
         testing = caller;
